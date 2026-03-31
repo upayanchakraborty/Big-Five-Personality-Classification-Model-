@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCEAN — Personality Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #14141a;
+    --card: #1a1a24;
+    --border: #2a2a38;
+    --accent-o: #a78bfa;
+    --accent-c: #34d399;
+    --accent-e: #fb923c;
+    --accent-a: #f472b6;
+    --accent-n: #60a5fa;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ── LANDING ── */
+  #landing {
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 2rem;
+  }
+
+  .bg-circles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bg-circles span {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.12;
+    animation: drift 12s ease-in-out infinite;
+  }
+  .bg-circles span:nth-child(1) { width: 500px; height: 500px; background: var(--accent-o); top: -100px; left: -100px; animation-delay: 0s; }
+  .bg-circles span:nth-child(2) { width: 400px; height: 400px; background: var(--accent-n); bottom: -100px; right: -100px; animation-delay: -4s; }
+  .bg-circles span:nth-child(3) { width: 300px; height: 300px; background: var(--accent-a); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -8s; }
+
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(30px, -20px); }
+  }
+
+  .landing-inner {
+    max-width: 600px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo-badge {
+    display: inline-flex;
+    gap: 6px;
+    margin-bottom: 2.5rem;
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .logo-badge span { color: var(--accent-o); }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(4rem, 10vw, 7rem);
+    font-weight: 300;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--text);
+  }
+
+  .landing-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 420px;
+    margin: 0 auto 3rem;
+    letter-spacing: 0.04em;
+  }
+
+  .ocean-pills {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+  }
+
+  .pill {
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+  .pill-o { color: var(--accent-o); border-color: var(--accent-o); background: rgba(167,139,250,0.07); }
+  .pill-c { color: var(--accent-c); border-color: var(--accent-c); background: rgba(52,211,153,0.07); }
+  .pill-e { color: var(--accent-e); border-color: var(--accent-e); background: rgba(251,146,60,0.07); }
+  .pill-a { color: var(--accent-a); border-color: var(--accent-a); background: rgba(244,114,182,0.07); }
+  .pill-n { color: var(--accent-n); border-color: var(--accent-n); background: rgba(96,165,250,0.07); }
+
+  .btn-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 36px;
+    background: var(--white);
+    color: var(--bg);
+    border: none;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-start:hover { background: #d0d0ff; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(167,139,250,0.3); }
+  .btn-start svg { width: 16px; height: 16px; }
+
+  .meta-note {
+    margin-top: 2rem;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── QUIZ ── */
+  #quiz { padding: 0; }
+
+  .quiz-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(13,13,15,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .quiz-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 300;
+    color: var(--white);
+    letter-spacing: 0.05em;
+  }
+
+  .progress-wrap {
+    flex: 1;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-o), var(--accent-n));
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+
+  .quiz-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    min-height: calc(100vh - 65px);
+  }
+
+  .question-card {
+    max-width: 680px;
+    width: 100%;
+    animation: slideIn 0.35s ease both;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .q-number {
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .q-trait-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .q-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 300;
+    line-height: 1.3;
+    color: var(--white);
+    margin-bottom: 3rem;
+  }
+
+  .scale-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.58rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  .scale-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 2.5rem;
+  }
+
+  .scale-btn {
+    flex: 1;
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 90px;
+  }
+  .scale-btn:hover { border-color: var(--accent-o); color: var(--white); background: rgba(167,139,250,0.1); transform: translateY(-2px); }
+  .scale-btn.selected { border-color: var(--white); color: var(--white); background: rgba(255,255,255,0.1); transform: translateY(-2px); }
+
+  .quiz-nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .btn-nav {
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+  }
+  .btn-nav:hover { color: var(--white); border-color: var(--white); }
+
+  .btn-next {
+    padding: 10px 28px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    background: var(--white);
+    color: var(--bg);
+    font-weight: 500;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .btn-next.enabled { opacity: 1; pointer-events: auto; }
+  .btn-next.enabled:hover { background: #d0d0ff; transform: translateY(-1px); }
+
+  /* ── LOADING ── */
+  #loading {
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+
+  .loading-inner { text-align: center; }
+
+  .loader-rings {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 2rem;
+  }
+  .loader-rings span {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    animation: spin 2s linear infinite;
+  }
+  .loader-rings span:nth-child(1) { border-top-color: var(--accent-o); animation-duration: 2s; }
+  .loader-rings span:nth-child(2) { inset: 10px; border-top-color: var(--accent-e); animation-duration: 1.5s; animation-direction: reverse; }
+  .loader-rings span:nth-child(3) { inset: 20px; border-top-color: var(--accent-n); animation-duration: 1s; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* ── RESULTS ── */
+  #results {
+    padding: 3rem 2rem;
+    align-items: center;
+    justify-content: flex-start;
+    flex-direction: column;
+  }
+
+  .results-inner {
+    max-width: 720px;
+    width: 100%;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .results-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .results-eyebrow {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .personality-type {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  .personality-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.8;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .traits-grid {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 2.5rem;
+  }
+
+  .trait-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    display: grid;
+    grid-template-columns: 180px 1fr 80px;
+    align-items: center;
+    gap: 1.5rem;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .trait-row:nth-child(1) { animation-delay: 0.1s; }
+  .trait-row:nth-child(2) { animation-delay: 0.2s; }
+  .trait-row:nth-child(3) { animation-delay: 0.3s; }
+  .trait-row:nth-child(4) { animation-delay: 0.4s; }
+  .trait-row:nth-child(5) { animation-delay: 0.5s; }
+
+  .trait-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .trait-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .trait-name {
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .trait-bar-wrap {
+    height: 6px;
+    background: var(--border);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .trait-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0;
+  }
+
+  .trait-level {
+    text-align: right;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .level-low { color: #60a5fa; }
+  .level-medium { color: #fbbf24; }
+  .level-high { color: #34d399; }
+
+  .results-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-retake {
+    padding: 12px 32px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .btn-retake:hover { color: var(--white); border-color: var(--white); }
+
+  .btn-copy {
+    padding: 12px 32px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    background: var(--white);
+    color: var(--bg);
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .btn-copy:hover { background: #d0d0ff; }
+
+  @media (max-width: 600px) {
+    .trait-row { grid-template-columns: 1fr; gap: 0.75rem; }
+    .scale-buttons { gap: 6px; }
+    .scale-btn { font-size: 0.75rem; }
+    .quiz-header { padding: 0.75rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LANDING ── -->
+<div id="landing" class="screen active">
+  <div class="bg-circles">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="landing-inner">
+    <div class="logo-badge"><span>IPIP-NEO</span> · 120 Item Assessment</div>
+    <h1>Know<br><em>Your</em><br>Mind</h1>
+    <p class="landing-desc">
+      A scientific personality assessment based on the Big Five framework.
+      Answer 120 questions honestly. Discover your OCEAN profile.
+    </p>
+    <div class="ocean-pills">
+      <span class="pill pill-o">Openness</span>
+      <span class="pill pill-c">Conscientiousness</span>
+      <span class="pill pill-e">Extraversion</span>
+      <span class="pill pill-a">Agreeableness</span>
+      <span class="pill pill-n">Neuroticism</span>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">
+      Begin Assessment
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 8h10M9 4l4 4-4 4"/>
+      </svg>
+    </button>
+    <p class="meta-note">120 questions · ~15 minutes · Results shown instantly</p>
+  </div>
+</div>
+
+<!-- ── QUIZ ── -->
+<div id="quiz" class="screen">
+  <div class="quiz-header">
+    <div class="quiz-logo">OCEAN</div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="q-counter">Question 1 of 120</span>
+        <span id="q-pct">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+  <div class="quiz-body">
+    <div class="question-card" id="question-card">
+      <div class="q-number" id="q-number">01 / 120</div>
+      <div class="q-trait-tag" id="q-trait-tag"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="scale-labels">
+        <span>Inaccurate</span>
+        <span>Accurate</span>
+      </div>
+      <div class="scale-buttons" id="scale-buttons">
+        <button class="scale-btn" onclick="selectAnswer(1)">1</button>
+        <button class="scale-btn" onclick="selectAnswer(2)">2</button>
+        <button class="scale-btn" onclick="selectAnswer(3)">3</button>
+        <button class="scale-btn" onclick="selectAnswer(4)">4</button>
+        <button class="scale-btn" onclick="selectAnswer(5)">5</button>
+      </div>
+      <div class="quiz-nav">
+        <button class="btn-nav" id="btn-prev" onclick="prevQuestion()">← Back</button>
+        <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LOADING ── -->
+<div id="loading" class="screen">
+  <div class="loading-inner">
+    <div class="loader-rings">
+      <span></span><span></span><span></span>
+    </div>
+    <p class="loading-text">Analysing your profile</p>
+  </div>
+</div>
+
+<!-- ── RESULTS ── -->
+<div id="results" class="screen">
+  <div class="results-inner">
+    <div class="results-header">
+      <div class="results-eyebrow">Your Personality Profile</div>
+      <div class="personality-type" id="personality-type"></div>
+      <p class="personality-desc" id="personality-desc"></p>
+    </div>
+    <div class="traits-grid" id="traits-grid"></div>
+    <div class="results-footer">
+      <button class="btn-retake" onclick="retake()">Retake Assessment</button>
+      <button class="btn-copy" onclick="copyResults()">Copy Results</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  "Worry about things.","Make friends easily.","Have a vivid imagination.","Trust others.","Complete tasks successfully.",
+  "Get angry easily.","Love large parties.","Believe in the importance of art.","Use others for my own ends.","Like to tidy up.",
+  "Often feel blue.","Take charge.","Experience my emotions intensely.","Love to help others.","Keep my promises.",
+  "Find it difficult to approach others.","Am always busy.","Prefer variety to routine.","Love a good fight.","Work hard.",
+  "Go on binges.","Love excitement.","Love to read challenging material.","Believe that I am better than others.","Am always prepared.",
+  "Panic easily.","Radiate joy.","Tend to vote for liberal political candidates.","Sympathize with the homeless.","Jump into things without thinking.",
+  "Fear for the worst.","Feel comfortable around other people.","Enjoy wild flights of fantasy.","Believe that others have good intentions.","Excel in what I do.",
+  "Get irritated easily.","Talk to a lot of different people at parties.","See beauty in things that others might not notice.","Cheat to get ahead.","Often forget to put things back in their proper place.",
+  "Dislike myself.","Try to lead others.","Feel others' emotions.","Am concerned about others.","Tell the truth.",
+  "Am afraid to draw attention to myself.","Am always on the go.","Prefer to stick with things that I know.","Yell at people.","Do more than what's expected of me.",
+  "Rarely overindulge.","Seek adventure.","Avoid philosophical discussions.","Think highly of myself.","Carry out my plans.",
+  "Become overwhelmed by events.","Have a lot of fun.","Believe that there is no absolute right or wrong.","Feel sympathy for those who are worse off than myself.","Make rash decisions.",
+  "Am afraid of many things.","Avoid contacts with others.","Love to daydream.","Trust what people say.","Handle tasks smoothly.",
+  "Lose my temper.","Prefer to be alone.","Do not like poetry.","Take advantage of others.","Leave a mess in my room.",
+  "Am often down in the dumps.","Take control of things.","Rarely notice my emotional reactions.","Am indifferent to the feelings of others.","Break rules.",
+  "Only feel comfortable with friends.","Do a lot in my spare time.","Dislike changes.","Insult people.","Do just enough work to get by.",
+  "Easily resist temptations.","Enjoy being reckless.","Have difficulty understanding abstract ideas.","Have a high opinion of myself.","Waste my time.",
+  "Feel that I'm unable to deal with things.","Love life.","Tend to vote for conservative political candidates.","Am not interested in other people's problems.","Rush into things.",
+  "Get stressed out easily.","Keep others at a distance.","Like to get lost in thought.","Distrust people.","Know how to get things done.",
+  "Am not easily annoyed.","Avoid crowds.","Do not enjoy going to art museums.","Obstruct others' plans.","Leave my belongings around.",
+  "Feel comfortable with myself.","Wait for others to lead the way.","Don't understand people who get emotional.","Take no time for others.","Break my promises.",
+  "Am not bothered by difficult social situations.","Like to take it easy.","Am attached to conventional ways.","Get back at others.","Put little time and effort into my work.",
+  "Am able to control my cravings.","Act wild and crazy.","Am not interested in theoretical discussions.","Boast about my virtues.","Have difficulty starting tasks.",
+  "Remain calm under pressure.","Look at the bright side of life.","Believe that we should be tough on crime.","Try not to think about the needy.","Act without thinking."
+];
+
+const traitColors = {
+  O: { bg: 'rgba(167,139,250,0.15)', color: '#a78bfa', dot: '#a78bfa', label: 'Openness' },
+  C: { bg: 'rgba(52,211,153,0.15)',  color: '#34d399', dot: '#34d399', label: 'Conscientiousness' },
+  E: { bg: 'rgba(251,146,60,0.15)',  color: '#fb923c', dot: '#fb923c', label: 'Extraversion' },
+  A: { bg: 'rgba(244,114,182,0.15)', color: '#f472b6', dot: '#f472b6', label: 'Agreeableness' },
+  N: { bg: 'rgba(96,165,250,0.15)',  color: '#60a5fa', dot: '#60a5fa', label: 'Neuroticism' }
+};
+
+// trait tag per question (1 tag per 24 questions, cycling O C E A N)
+function getTraitForQ(idx) {
+  const traits = ['N','E','O','A','C'];
+  return traits[Math.floor(idx / 24) % 5];
+}
+
+let currentQ = 0;
+let answers = new Array(120).fill(null);
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers = new Array(120).fill(null);
+  showScreen('quiz');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const trait = getTraitForQ(currentQ);
+  const tc = traitColors[trait];
+
+  document.getElementById('q-number').textContent =
+    String(currentQ + 1).padStart(2, '0') + ' / 120';
+
+  const tag = document.getElementById('q-trait-tag');
+  tag.textContent = tc.label;
+  tag.style.background = tc.bg;
+  tag.style.color = tc.color;
+  tag.style.border = `1px solid ${tc.color}40`;
+
+  document.getElementById('q-text').textContent = questions[currentQ];
+
+  const pct = Math.round((currentQ / 120) * 100);
+  document.getElementById('q-counter').textContent = `Question ${currentQ + 1} of 120`;
+  document.getElementById('q-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+
+  // Reset scale buttons
+  document.querySelectorAll('.scale-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', answers[currentQ] === i + 1);
+  });
+
+  const nextBtn = document.getElementById('btn-next');
+  nextBtn.classList.toggle('enabled', answers[currentQ] !== null);
+  nextBtn.textContent = currentQ === 119 ? 'See Results →' : 'Next →';
+
+  document.getElementById('btn-prev').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+
+  // Animate card
+  const card = document.getElementById('question-card');
+  card.style.animation = 'none';
+  void card.offsetWidth;
+  card.style.animation = 'slideIn 0.35s ease both';
+}
+
+function selectAnswer(val) {
+  answers[currentQ] = val;
+  document.querySelectorAll('.scale-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i + 1 === val);
+  });
+  document.getElementById('btn-next').classList.add('enabled');
+}
+
+function nextQuestion() {
+  if (answers[currentQ] === null) return;
+  if (currentQ === 119) { showResults(); return; }
+  currentQ++;
+  renderQuestion();
+}
+
+function prevQuestion() {
+  if (currentQ === 0) return;
+  currentQ--;
+  renderQuestion();
+}
+
+const API_URL = 'http://127.0.0.1:5000/predict';
+
+async function showResults() {
+  showScreen('loading');
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ responses: answers })
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Server error');
+    }
+    const data = await response.json();
+    renderResultsFromAPI(data);
+    showScreen('results');
+  } catch (err) {
+    alert('Could not connect to the prediction server.\n\nMake sure app.py is running:\n  python app.py\n\nError: ' + err.message);
+    showScreen('quiz');
+  }
+}
+
+function getPersonalityType(s) {
+  const o = s.O.level, c = s.C.level, e = s.E.level, a = s.A.level, n = s.N.level;
+  if (e==='High'&&a==='High'&&n==='Low')    return ['The Leader',    'Charismatic, warm, and emotionally stable. Natural at bringing people together and inspiring those around them.'];
+  if (o==='High'&&e==='High'&&a==='High')   return ['The Entertainer','Creative, sociable, and fun-loving. Thrives in social settings and brings energy wherever they go.'];
+  if (c==='High'&&o==='High'&&n==='Low')    return ['The Achiever',   'Disciplined, curious, and focused. Highly goal-oriented with a strong drive to learn and excel.'];
+  if (a==='High'&&n==='Low'&&e==='Low')     return ['The Caregiver',  'Empathetic, calm, and deeply supportive. Puts others first and brings stability to every relationship.'];
+  if (o==='High'&&e==='Low'&&c==='High')    return ['The Thinker',    'Intellectual, introspective, and methodical. Prefers the world of ideas and thrives in deep focus.'];
+  if (n==='High'&&e==='Low'&&a==='Low')     return ['The Lone Wolf',  'Independent, intense, and private. Prefers depth over breadth and carves their own path.'];
+  if (c==='High'&&a==='High'&&e==='Low')    return ['The Defender',   'Reliable, kind, and hardworking. Quietly dedicated to doing what is right and caring for others.'];
+  if (o==='Low'&&c==='Low'&&e==='High')     return ['The Adventurer', 'Spontaneous, energetic, and thrill-seeking. Lives fully in the present moment.'];
+  if (o==='High'&&a==='Low'&&e==='High')    return ['The Debater',    'Bold, curious, and argumentative. Loves challenging ideas and never backs down from a discussion.'];
+  return ['The Balanced', 'A well-rounded and adaptable personality. Comfortable across many different situations and social contexts.'];
+}
+
+// Renders results from the Flask API response
+// data = { traits: {openness: "High", ...}, personality_type: "...", description: "..." }
+function renderResultsFromAPI(data) {
+  document.getElementById('personality-type').textContent = data.personality_type;
+  document.getElementById('personality-desc').textContent = data.description;
+
+  const traitList = [
+    { key: 'O', name: 'Openness',          apiKey: 'openness' },
+    { key: 'C', name: 'Conscientiousness', apiKey: 'conscientiousness' },
+    { key: 'E', name: 'Extraversion',      apiKey: 'extraversion' },
+    { key: 'A', name: 'Agreeableness',     apiKey: 'agreeableness' },
+    { key: 'N', name: 'Neuroticism',       apiKey: 'neuroticism' },
+  ];
+
+  const levelToPct = { 'Low': 20, 'Medium': 55, 'High': 85 };
+
+  const grid = document.getElementById('traits-grid');
+  grid.innerHTML = '';
+
+  traitList.forEach(({ key, name, apiKey }) => {
+    const level = data.traits[apiKey];
+    const pct   = levelToPct[level] || 50;
+    const tc    = traitColors[key];
+
+    const row = document.createElement('div');
+    row.className = 'trait-row';
+    row.innerHTML = `
+      <div class="trait-label">
+        <div class="trait-dot" style="background:${tc.dot}"></div>
+        <div class="trait-name">${name}</div>
+      </div>
+      <div class="trait-bar-wrap">
+        <div class="trait-bar-fill" style="background:${tc.dot}" data-width="${pct}"></div>
+      </div>
+      <div class="trait-level level-${level.toLowerCase()}">${level}</div>
+    `;
+    grid.appendChild(row);
+  });
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.trait-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  }, 100);
+}
+
+function retake() {
+  showScreen('landing');
+}
+
+function copyResults() {
+  const type = document.getElementById('personality-type').textContent;
+  const desc = document.getElementById('personality-desc').textContent;
+  const rows = document.querySelectorAll('.trait-row');
+  let text = `OCEAN Personality Profile\n\n${type}\n${desc}\n\n`;
+  rows.forEach(row => {
+    const name = row.querySelector('.trait-name').textContent;
+    const level = row.querySelector('.trait-level').textContent;
+    text += `${name}: ${level}\n`;
+  });
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => btn.textContent = 'Copy Results', 2000);
+  });
+}
+</script>
+</body>
+</html>
