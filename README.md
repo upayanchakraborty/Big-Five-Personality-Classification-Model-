@@ -3,7 +3,9 @@
 A machine learning project to classify human personality traits based on the **Big Five (OCEAN) model** using questionnaire data.
 
 ---
-
+<p align="center">
+  <img src="logo.png" alt="Project Logo" width="200"/>
+</p>
 ##  Overview
 
 This project aims to build a personality prediction system that classifies individuals into five major personality traits:
