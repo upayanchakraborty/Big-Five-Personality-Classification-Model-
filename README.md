@@ -13,7 +13,7 @@ This project aims to build a personality prediction system that classifies indiv
 
 - **O** – Openness  
 - **C** – Conscientiousness  
-- **E** – Extraversion  
+- **E** – Extraversion   
 - **A** – Agreeableness  
 - **N** – Neuroticism  
 
