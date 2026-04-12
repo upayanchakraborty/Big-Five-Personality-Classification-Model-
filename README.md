@@ -91,6 +91,6 @@ cd Big-Five-Personality-Classification-Model-
 
 # Install dependencies
 pip install -r requirements.txt
-
+# Don't forget to download model from drive link and paste it in the same folder
 # Run the script
 python main.py
